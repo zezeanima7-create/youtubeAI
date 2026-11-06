@@ -19,6 +19,7 @@ export async function onRequestPost(context) {
   const style = String(body.style || "curioso e direto").trim().slice(0, 80);
   const batchIndex = Math.max(0, Math.floor(Number(body.batchIndex) || 0));
   const batchTotal = Math.max(0, Math.min(100, Math.floor(Number(body.batchTotal) || 0)));
+  const previousIdeas = Array.isArray(body.previousIdeas) ? body.previousIdeas.slice(-30).map(x => String(x).slice(0, 180)) : [];
 
   const prompt = `
 Você é roteirista do canal brasileiro de YouTube Shorts "Dicas Rápidas que Salvam".
