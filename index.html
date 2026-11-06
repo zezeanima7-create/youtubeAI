@@ -62,7 +62,7 @@ footer{text-align:center;color:#718078;font-size:12px;padding:0 16px 25px}
 <select id="style"><option>curioso e direto</option><option>didático e simples</option><option>alerta importante, sem sensacionalismo</option><option>leve e divertido</option></select>
 <button class="primary" id="generate" type="button">Gerar roteiro com Gemini</button>
 <p class="note" id="aiStatus" aria-live="polite">A IA só funciona depois de configurar a chave secreta no servidor Cloudflare Pages.</p>
-<div id="aiOutput" class="result hidden"><small>ROTEIRO GERADO — REVISE ANTES DE PUBLICAR</small><div id="aiText" style="white-space:pre-wrap;line-height:1.6;margin-top:12px"></div><button class="primary" id="copyScript" type="button">Copiar roteiro</button><button class="primary" id="makeImages" type="button">Gerar 3 imagens com Meta AI</button><p class="note" id="imageStatus" aria-live="polite">As imagens serão criadas para o gancho, a explicação e o encerramento.</p><div id="imageGallery" class="scene-grid"></div></div>
+<div id="aiOutput" class="result hidden"><small>ROTEIRO GERADO — REVISE ANTES DE PUBLICAR</small><div id="aiText" style="white-space:pre-wrap;line-height:1.6;margin-top:12px"></div><button class="primary" id="copyScript" type="button">Copiar roteiro</button><button class="primary" id="makeImages" type="button">Gerar imagem didática com Meta AI</button><p class="note" id="imageStatus" aria-live="polite">Será criada uma única imagem didática, sem texto ou legendas.</p><div id="imageGallery" class="scene-grid"></div></div>
 </div>
 </section>
 <section id="tutor" class="tab hidden"><div class="panel placeholder"><strong>Professor de programação</strong>O professor de Python e outras linguagens será conectado nesta área.</div></section>
@@ -110,15 +110,12 @@ el("makeImages").addEventListener("click",async()=>{
   const response=await fetch("/api/visuals",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({topic:el("topic").value,script:el("aiText").textContent})});
   const data=await response.json();
   if(!response.ok)throw new Error(data.error||"Não foi possível gerar as imagens.");
-  for(const item of data.images||[]){
-   const card=document.createElement("div");card.className="scene-card";
-   const title=document.createElement("strong");title.textContent=item.label;
-   const img=document.createElement("img");img.src=item.dataUrl;img.alt="Imagem gerada para "+item.label;img.loading="lazy";
-   card.append(title,img);gallery.append(card);
-  }
-  status.textContent=(data.images||[]).length+" imagens criadas com "+data.model+".";
+  if(!data.image)throw new Error("A Meta não retornou a imagem.");
+  const img=document.createElement("img");img.src=data.image;img.alt="Imagem didática gerada para o Short";img.loading="lazy";img.style.cssText="display:block;width:100%;max-width:420px;aspect-ratio:9/16;object-fit:cover;border-radius:12px;margin-top:12px";
+  gallery.append(img);
+  status.textContent="Uma imagem didática criada com "+data.model+". Sem texto e sem legendas.";
  }catch(error){status.textContent=error.message;}
- finally{button.disabled=false;button.textContent="Gerar 3 imagens com Meta AI";}
+ finally{button.disabled=false;button.textContent="Gerar imagem didática com Meta AI";}
 });
 calculate();
 </script>
