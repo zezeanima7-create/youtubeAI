@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 from tutor import run_tutor
+from calculator import run_calculator
 
 
 ROOT = Path(__file__).parent
@@ -16,11 +17,12 @@ def load_config():
 def show_menu():
     config = load_config()
 
-    print("\n=== YouTube AI + Python Tutor ===")
+    print("\n=== YouTube AI + Professor de Programação ===")
     print(f"Meta configurada: até {config['daily_video_limit']} Shorts por dia")
     print(f"Tema: {config['topic']}")
     print("\n1. Professor de Python")
-    print("2. YouTube AI (preparação de ideias e roteiros)")
+    print("2. YouTube AI (ideias e roteiros)")
+    print("3. Calculadora de postagens")
     print("0. Sair")
     return input("\nEscolha: ").strip()
 
@@ -32,8 +34,10 @@ def main():
         if choice == "1":
             run_tutor()
         elif choice == "2":
-            print("\nMódulo YouTube AI: próximo passo será criar ideias e roteiros.")
-            print("A publicação ainda não está conectada.")
+            print("\nMódulo YouTube AI: preparação de ideias e roteiros.")
+            print("A geração automática e a publicação ainda serão conectadas.")
+        elif choice == "3":
+            run_calculator()
         elif choice == "0":
             print("Até a próxima!")
             break
