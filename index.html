@@ -62,7 +62,17 @@ footer{text-align:center;color:#718078;font-size:12px;padding:0 16px 25px}
 <select id="style"><option>curioso e direto</option><option>didático e simples</option><option>alerta importante, sem sensacionalismo</option><option>leve e divertido</option></select>
 <button class="primary" id="generate" type="button">Gerar roteiro com Gemini</button>
 <p class="note" id="aiStatus" aria-live="polite">A IA só funciona depois de configurar a chave secreta no servidor Cloudflare Pages.</p>
-<div id="aiOutput" class="result hidden"><small>ROTEIRO GERADO — REVISE ANTES DE PUBLICAR</small><div id="aiText" style="white-space:pre-wrap;line-height:1.6;margin-top:12px"></div><button class="primary" id="copyScript" type="button">Copiar roteiro</button><button class="primary" id="makeImages" type="button">Gerar imagem didática com Meta AI</button><p class="note" id="imageStatus" aria-live="polite">Será criada uma única imagem didática, sem texto ou legendas.</p><div id="imageGallery" class="scene-grid"></div></div>
+<div id="aiOutput" class="result hidden"><small>ROTEIRO GERADO — REVISE ANTES DE PUBLICAR</small><div id="aiText" style="white-space:pre-wrap;line-height:1.6;margin-top:12px"></div><button class="primary" id="copyScript" type="button">Copiar roteiro</button><button class="primary" id="makeImages" type="button">Gerar imagem didática com Meta AI</button>
+<div style="margin-top:22px;padding-top:18px;border-top:1px solid var(--line)">
+<h3 style="margin:0 0 6px">Lote diário</h3>
+<p class="note">Gera um roteiro e uma única imagem por item, um de cada vez. O processo para se a cota gratuita acabar ou ocorrer um erro.</p>
+<label for="batchCount">Quantidade neste lote (máximo 100)</label>
+<input id="batchCount" type="number" min="1" max="100" step="1" value="10">
+<button class="primary" id="makeBatch" type="button">Gerar lote de Shorts</button>
+<button class="primary" id="stopBatch" type="button" disabled style="background:#39443d;color:#fff">Parar após o item atual</button>
+<p class="note" id="batchStatus" aria-live="polite">Nenhum lote iniciado.</p>
+<div id="batchResults" class="scene-grid"></div>
+</div><p class="note" id="imageStatus" aria-live="polite">Será criada uma única imagem didática, sem texto ou legendas.</p><div id="imageGallery" class="scene-grid"></div></div>
 </div>
 </section>
 <section id="tutor" class="tab hidden"><div class="panel placeholder"><strong>Professor de programação</strong>O professor de Python e outras linguagens será conectado nesta área.</div></section>
@@ -105,17 +115,55 @@ el("generate").addEventListener("click",async()=>{
 el("copyScript").addEventListener("click",async()=>{try{await navigator.clipboard.writeText(el("aiText").textContent);el("copyScript").textContent="Copiado!";}catch{el("copyScript").textContent="Não foi possível copiar";}});
 el("makeImages").addEventListener("click",async()=>{
  const button=el("makeImages"),status=el("imageStatus"),gallery=el("imageGallery");
- button.disabled=true;button.textContent="Criando imagens...";status.textContent="Gemini está planejando as cenas e a Meta AI está gerando as imagens.";gallery.innerHTML="";
+ button.disabled=true;button.textContent="Criando imagem...";status.textContent="Gerando uma única imagem didática.";
  try{
   const response=await fetch("/api/visuals",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({topic:el("topic").value,script:el("aiText").textContent})});
   const data=await response.json();
-  if(!response.ok)throw new Error(data.error||"Não foi possível gerar as imagens.");
-  if(!data.image)throw new Error("A Meta não retornou a imagem.");
-  const img=document.createElement("img");img.src=data.image;img.alt="Imagem didática gerada para o Short";img.loading="lazy";img.style.cssText="display:block;width:100%;max-width:420px;aspect-ratio:9/16;object-fit:cover;border-radius:12px;margin-top:12px";
+  if(!response.ok)throw new Error(data.error||"Não foi possível gerar a imagem.");
+  if(!data.image)throw new Error("O serviço não retornou a imagem.");
+  gallery.innerHTML="";
+  const img=document.createElement("img");img.src=data.image;img.alt="Imagem didática do Short";img.loading="lazy";img.style.cssText="display:block;width:100%;max-width:420px;aspect-ratio:9/16;object-fit:cover;border-radius:12px;margin-top:12px";
   gallery.append(img);
-  status.textContent="Uma imagem didática criada com "+data.model+". Sem texto e sem legendas.";
+  status.textContent="Uma imagem didática criada com "+data.model+".";
  }catch(error){status.textContent=error.message;}
- finally{button.disabled=false;button.textContent="Gerar imagem didática com Meta AI";}
+ finally{button.disabled=false;button.textContent="Gerar imagem didática";}
+});
+
+let stopBatchRequested=false;
+el("stopBatch").addEventListener("click",()=>{stopBatchRequested=true;el("batchStatus").textContent="Parada solicitada. O item atual será concluído.";});
+el("makeBatch").addEventListener("click",async()=>{
+ const button=el("makeBatch"),stop=el("stopBatch"),status=el("batchStatus"),results=el("batchResults");
+ const count=Math.min(100,Math.max(1,Math.floor(Number(el("batchCount").value)||1)));
+ el("batchCount").value=count;
+ stopBatchRequested=false;button.disabled=true;stop.disabled=false;results.innerHTML="";
+ let completed=0;
+ for(let i=1;i<=count;i++){
+  if(stopBatchRequested)break;
+  status.textContent="Gerando item "+i+" de "+count+": roteiro...";
+  try{
+   const scriptResponse=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({topic:el("topic").value,style:el("style").value,batchIndex:i,batchTotal:count})});
+   const scriptData=await scriptResponse.json();
+   if(!scriptResponse.ok)throw new Error(scriptData.error||"Falha ao gerar roteiro.");
+   status.textContent="Item "+i+" de "+count+": gerando uma imagem...";
+   const imageResponse=await fetch("/api/visuals",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({topic:el("topic").value,script:scriptData.text})});
+   const imageData=await imageResponse.json();
+   if(!imageResponse.ok)throw new Error(imageData.error||"Falha ao gerar imagem.");
+   if(!imageData.image)throw new Error("O serviço não retornou a imagem.");
+   const card=document.createElement("article");card.className="scene-card";
+   const title=document.createElement("strong");title.textContent="Short "+i;
+   const script=document.createElement("p");script.style.cssText="white-space:pre-wrap;font-size:13px;line-height:1.5";script.textContent=scriptData.text;
+   const img=document.createElement("img");img.src=imageData.image;img.alt="Imagem didática do Short "+i;img.loading="lazy";
+   const download=document.createElement("a");download.href=imageData.image;download.download="short-"+String(i).padStart(3,"0")+".jpg";download.textContent="Baixar imagem";download.style.cssText="display:inline-block;margin-top:10px;color:#8df0b2";
+   card.append(title,script,img,download);results.append(card);completed++;
+   status.textContent="Concluídos: "+completed+" de "+count+".";
+  }catch(error){
+   status.textContent="Parou no item "+i+". "+error.message+" Itens concluídos: "+completed+".";
+   break;
+  }
+ }
+ if(stopBatchRequested)status.textContent="Lote interrompido. Concluídos: "+completed+" de "+count+".";
+ else if(completed===count)status.textContent="Lote concluído: "+completed+" roteiros e "+completed+" imagens. Revise tudo antes de usar.";
+ button.disabled=false;stop.disabled=true;
 });
 calculate();
 </script>
