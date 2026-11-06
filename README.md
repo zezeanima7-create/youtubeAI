@@ -39,7 +39,8 @@ Build output directory: `.`
 Para ativar o gerador:
 1. Nas configurações do projeto Cloudflare Pages, abra **Settings → Variables and Secrets**.
 2. Adicione `GEMINI_API_KEY` como **Secret**, com a chave criada no Google AI Studio. Não coloque a chave no HTML, no GitHub ou em mensagens.
-3. Faça um novo deploy e teste a aba **YouTube AI**.
+3. Depois de salvar ou alterar o segredo, faça um novo deploy de produção para que a função receba a configuração atualizada.
+4. Teste a aba **YouTube AI**.
 
 Modelo configurado: `gemini-2.5-flash-lite`. O uso depende dos limites e preços vigentes da API. Revise fatos e fontes do roteiro antes de publicar.
 
