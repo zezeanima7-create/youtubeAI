@@ -99,7 +99,7 @@ el("generate").addEventListener("click",async()=>{
   el("aiText").textContent=data.text;
   el("aiOutput").classList.remove("hidden");
   status.textContent="Roteiro criado com "+data.model+". Confira as informações e fontes antes de publicar.";
- }catch(error){status.textContent=error.message+" Se a página estiver no GitHub Pages, a função de servidor não será executada; publique pelo Cloudflare Pages.";}
+ }catch(error){status.textContent=error.message;}
  finally{button.disabled=false;button.textContent="Gerar roteiro com Gemini";}
 });
 el("copyScript").addEventListener("click",async()=>{try{await navigator.clipboard.writeText(el("aiText").textContent);el("copyScript").textContent="Copiado!";}catch{el("copyScript").textContent="Não foi possível copiar";}});
