@@ -43,7 +43,7 @@ Regras obrigatórias:
 
   try {
     const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent",
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent",
       {
         method: "POST",
         headers: {
@@ -77,7 +77,7 @@ Regras obrigatórias:
       return Response.json({ error: "A IA retornou uma resposta vazia." }, { status: 502 });
     }
 
-    return Response.json({ text, model: "Gemini 2.5 Flash-Lite" });
+    return Response.json({ text, model: "Gemini 3.5 Flash-Lite" });
   } catch {
     return Response.json({ error: "Falha de conexão com o serviço de IA." }, { status: 502 });
   }
