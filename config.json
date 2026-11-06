@@ -1,0 +1,7 @@
+{
+  "daily_video_limit": 5,
+  "video_format": "shorts",
+  "topic": "dicas",
+  "language": "pt-BR",
+  "require_review_before_publish": true
+}
