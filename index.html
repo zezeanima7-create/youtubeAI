@@ -137,13 +137,18 @@ el("makeBatch").addEventListener("click",async()=>{
  el("batchCount").value=count;
  stopBatchRequested=false;button.disabled=true;stop.disabled=false;results.innerHTML="";
  let completed=0;
+ const previousIdeas=[];
+ const topicPool=["cozinha e preparo seguro de alimentos","organização da casa","limpeza doméstica segura","cuidados básicos com plantas","cuidados responsáveis com calopsitas e outros pets","uso útil do celular","segurança digital e privacidade","economia de água em casa","economia de energia","estudos e aprendizagem","organização do tempo","cuidados com roupas e calçados","pequenos reparos domésticos seguros","higiene e rotina pessoal","armazenamento de alimentos","jardinagem simples","etiqueta e convivência","reciclagem e descarte correto","dicas para compras conscientes","funções úteis de aplicativos"];
  for(let i=1;i<=count;i++){
   if(stopBatchRequested)break;
   status.textContent="Gerando item "+i+" de "+count+": roteiro...";
   try{
-   const scriptResponse=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({topic:el("topic").value,style:el("style").value,batchIndex:i,batchTotal:count})});
+   const requestedTopic=el("topic").value.trim();
+   const batchTopic=requestedTopic || topicPool[(i-1)%topicPool.length];
+   const scriptResponse=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({topic:batchTopic,style:el("style").value,batchIndex:i,batchTotal:count,previousIdeas})});
    const scriptData=await scriptResponse.json();
    if(!scriptResponse.ok)throw new Error(scriptData.error||"Falha ao gerar roteiro.");
+   previousIdeas.push(scriptData.text.slice(0,180));
    status.textContent="Item "+i+" de "+count+": gerando uma imagem...";
    const imageResponse=await fetch("/api/visuals",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({topic:el("topic").value,script:scriptData.text})});
    const imageData=await imageResponse.json();
