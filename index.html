@@ -23,7 +23,7 @@ input:focus,select:focus{border-color:var(--green)}
 .result{background:linear-gradient(135deg,#173b28,#14271c);border:1px solid #2c7047;border-radius:16px;padding:18px;margin-top:17px}
 .result small{color:#b4d9c0;font-weight:700;letter-spacing:.7px}.big{font-size:34px;font-weight:850;color:#8df0b2;margin:5px 0}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.stat{background:#0e1711;border-radius:11px;padding:12px}.stat span{display:block;color:var(--muted);font-size:12px}.stat strong{font-size:19px}
-.note{color:var(--muted);font-size:12px;line-height:1.5;margin:14px 2px 0}
+.note{color:var(--muted);font-size:12px;line-height:1.5;margin:14px 2px 0}.scene-grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:14px}.scene-card{background:#0e1410;border:1px solid var(--line);border-radius:12px;padding:10px}.scene-card strong{display:block;margin-bottom:8px}.scene-card img{display:block;width:100%;aspect-ratio:9/16;object-fit:cover;border-radius:9px}
 button.primary{width:100%;border:0;border-radius:12px;padding:14px;background:var(--green);color:#092012;font-size:15px;font-weight:800;margin-top:16px}
 .hidden{display:none}.placeholder{padding:26px 5px;text-align:center;color:var(--muted)}.placeholder strong{display:block;color:var(--text);font-size:17px;margin-bottom:7px}
 footer{text-align:center;color:#718078;font-size:12px;padding:0 16px 25px}
@@ -62,7 +62,7 @@ footer{text-align:center;color:#718078;font-size:12px;padding:0 16px 25px}
 <select id="style"><option>curioso e direto</option><option>didático e simples</option><option>alerta importante, sem sensacionalismo</option><option>leve e divertido</option></select>
 <button class="primary" id="generate" type="button">Gerar roteiro com Gemini</button>
 <p class="note" id="aiStatus" aria-live="polite">A IA só funciona depois de configurar a chave secreta no servidor Cloudflare Pages.</p>
-<div id="aiOutput" class="result hidden"><small>ROTEIRO GERADO — REVISE ANTES DE PUBLICAR</small><div id="aiText" style="white-space:pre-wrap;line-height:1.6;margin-top:12px"></div><button class="primary" id="copyScript" type="button">Copiar roteiro</button></div>
+<div id="aiOutput" class="result hidden"><small>ROTEIRO GERADO — REVISE ANTES DE PUBLICAR</small><div id="aiText" style="white-space:pre-wrap;line-height:1.6;margin-top:12px"></div><button class="primary" id="copyScript" type="button">Copiar roteiro</button><button class="primary" id="makeImages" type="button">Gerar 3 imagens com Meta AI</button><p class="note" id="imageStatus" aria-live="polite">As imagens serão criadas para o gancho, a explicação e o encerramento.</p><div id="imageGallery" class="scene-grid"></div></div>
 </div>
 </section>
 <section id="tutor" class="tab hidden"><div class="panel placeholder"><strong>Professor de programação</strong>O professor de Python e outras linguagens será conectado nesta área.</div></section>
@@ -103,6 +103,23 @@ el("generate").addEventListener("click",async()=>{
  finally{button.disabled=false;button.textContent="Gerar roteiro com Gemini";}
 });
 el("copyScript").addEventListener("click",async()=>{try{await navigator.clipboard.writeText(el("aiText").textContent);el("copyScript").textContent="Copiado!";}catch{el("copyScript").textContent="Não foi possível copiar";}});
+el("makeImages").addEventListener("click",async()=>{
+ const button=el("makeImages"),status=el("imageStatus"),gallery=el("imageGallery");
+ button.disabled=true;button.textContent="Criando imagens...";status.textContent="Gemini está planejando as cenas e a Meta AI está gerando as imagens.";gallery.innerHTML="";
+ try{
+  const response=await fetch("/api/visuals",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({topic:el("topic").value,script:el("aiText").textContent})});
+  const data=await response.json();
+  if(!response.ok)throw new Error(data.error||"Não foi possível gerar as imagens.");
+  for(const item of data.images||[]){
+   const card=document.createElement("div");card.className="scene-card";
+   const title=document.createElement("strong");title.textContent=item.label;
+   const img=document.createElement("img");img.src=item.dataUrl;img.alt="Imagem gerada para "+item.label;img.loading="lazy";
+   card.append(title,img);gallery.append(card);
+  }
+  status.textContent=(data.images||[]).length+" imagens criadas com "+data.model+".";
+ }catch(error){status.textContent=error.message;}
+ finally{button.disabled=false;button.textContent="Gerar 3 imagens com Meta AI";}
+});
 calculate();
 </script>
 </body>
