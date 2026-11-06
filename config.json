@@ -3,5 +3,9 @@
   "video_format": "shorts",
   "topic": "dicas",
   "language": "pt-BR",
+  "youtube_channel_url": "https://youtube.com/@dicasrapidas12?feature=shared",
+  "youtube_channel_handle": "@dicasrapidas12",
+  "image_prompt_file": "prompts/meta_ai_image_prompt.md",
+  "image_generation_provider": "Meta AI (manual workflow initially)",
   "require_review_before_publish": true
 }
