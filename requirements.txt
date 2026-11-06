@@ -1,1 +1,1 @@
-# Dependências serão adicionadas conforme os módulos forem implementados.
+google-genai>=1.0.0
