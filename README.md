@@ -40,3 +40,19 @@ Para ativar o gerador:
 Modelo configurado: `gemini-2.5-flash`. O uso depende dos limites e preços vigentes da API. Revise fatos e fontes do roteiro antes de publicar.
 
 A função gera texto. Ela ainda não cria arquivo de vídeo, imagem, áudio ou publica no YouTube.
+
+### Executar o gerador Python
+
+Instale as dependências:
+
+```bash
+pip install -r requirements.txt
+```
+
+Configure `GEMINI_API_KEY` como variável de ambiente no ambiente de execução e inicie:
+
+```bash
+python main.py
+```
+
+O menu `2` chama `ai_generator.py` pelo SDK oficial `google-genai`. O modelo usado é `gemini-2.5-flash-lite`, escolhido para reduzir custo. A disponibilidade do nível gratuito e os limites podem variar por região e conta. Nunca publique a chave no repositório.
