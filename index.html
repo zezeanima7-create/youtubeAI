@@ -63,6 +63,8 @@ footer{text-align:center;color:#718078;font-size:12px;padding:0 16px 25px}
 <button class="primary" id="generate" type="button">Gerar roteiro com Gemini</button>
 <p class="note" id="aiStatus" aria-live="polite">A IA só funciona depois de configurar a chave secreta no servidor Cloudflare Pages.</p>
 <div id="aiOutput" class="result hidden"><small>ROTEIRO GERADO — REVISE ANTES DE PUBLICAR</small><div id="aiText" style="white-space:pre-wrap;line-height:1.6;margin-top:12px"></div><button class="primary" id="copyScript" type="button">Copiar roteiro</button><button class="primary" id="makeImages" type="button">Gerar imagem didática com Meta AI</button>
+<p class="note" id="imageStatus" aria-live="polite">Será criada uma única imagem didática, sem texto ou legendas.</p><div id="imageGallery" class="scene-grid"></div></div>
+</div>
 <div style="margin-top:22px;padding-top:18px;border-top:1px solid var(--line)">
 <h3 style="margin:0 0 6px">Lote diário</h3>
 <p class="note">Gera um roteiro e uma única imagem por item, um de cada vez. O processo para se a cota gratuita acabar ou ocorrer um erro.</p>
@@ -72,7 +74,7 @@ footer{text-align:center;color:#718078;font-size:12px;padding:0 16px 25px}
 <button class="primary" id="stopBatch" type="button" disabled style="background:#39443d;color:#fff">Parar após o item atual</button>
 <p class="note" id="batchStatus" aria-live="polite">Nenhum lote iniciado.</p>
 <div id="batchResults" class="scene-grid"></div>
-</div><p class="note" id="imageStatus" aria-live="polite">Será criada uma única imagem didática, sem texto ou legendas.</p><div id="imageGallery" class="scene-grid"></div></div>
+</div>
 </div>
 </section>
 <section id="tutor" class="tab hidden"><div class="panel placeholder"><strong>Professor de programação</strong>O professor de Python e outras linguagens será conectado nesta área.</div></section>
