@@ -40,56 +40,69 @@ footer{text-align:center;color:#718078;font-size:12px;padding:0 16px 25px}
 <main class="wrap">
 <section id="calc" class="tab">
 <div class="panel">
-<h2>Calculadora de postagens</h2>
-<p class="sub">Informe a frequência e veja a estimativa para vários dias.</p>
-<div class="grid">
-<div><label for="videos">Vídeos por postagem</label><input id="videos" type="number" min="1" step="1" value="1"></div>
-<div><label for="interval">Intervalo entre postagens</label><input id="interval" type="number" min="1" step="1" value="10"></div>
-</div>
-<label for="unit">Unidade do intervalo</label>
-<select id="unit"><option value="1">Minutos</option><option value="60">Horas</option></select>
-<div class="grid">
-<div><label for="hours">Horas de postagem por dia</label><input id="hours" type="number" min="0" max="24" step="0.5" value="24"></div>
-<div><label for="days">Quantidade de dias</label><input id="days" type="number" min="0" step="1" value="7"></div>
-</div>
+<h2>Calculadora simples</h2>
+<p class="sub">Quantos vídeos você quer e de quanto em quanto tempo pretende postar?</p>
+<label for="videos">Quantidade de vídeos</label><input id="videos" type="number" min="1" step="1" value="20">
+<label for="interval">Intervalo entre cada vídeo (minutos)</label><input id="interval" type="number" min="1" step="1" value="10">
 <div class="result" aria-live="polite">
-<small>TOTAL ESTIMADO NO PERÍODO</small>
-<div class="big" id="total">1.008 vídeos</div>
-<div class="stats">
-<div class="stat"><span>Vídeos por dia</span><strong id="daily">144</strong></div>
-<div class="stat"><span>Postagens por dia</span><strong id="posts">144</strong></div>
+<small>TEMPO ESTIMADO PARA POSTAR TUDO</small>
+<div class="big" id="total">3 horas e 20 minutos</div>
+<div class="stats"><div class="stat"><span>Quantidade</span><strong id="daily">20 vídeos</strong></div><div class="stat"><span>Equivalente em dias</span><strong id="daysResult">0,14 dia</strong></div></div>
 </div>
-</div>
-<p class="note" id="explain">Estimativa matemática considerando o intervalo durante as horas informadas. Não significa que o YouTube permitirá ou realizará todas essas publicações.</p>
-<button class="primary" id="reset" type="button">Restaurar valores iniciais</button>
+<p class="note">Cálculo teórico considerando postagens contínuas, sem pausas. É apenas uma estimativa, não uma programação automática de publicações.</p>
 </div>
 </section>
-<section id="youtube" class="tab hidden"><div class="panel placeholder"><strong>YouTube AI</strong>O módulo de ideias, roteiros e preparação dos Shorts será conectado nesta área.</div></section>
+<section id="youtube" class="tab hidden">
+<div class="panel">
+<h2>Gerador de Shorts com IA</h2>
+<p class="sub">Crie um roteiro original para o canal Dicas Rápidas que Salvam.</p>
+<label for="topic">Assunto ou tema (ou deixe em branco para uma ideia surpresa)</label>
+<input id="topic" maxlength="180" placeholder="Ex.: cuidados com calopsitas">
+<label for="style">Estilo do vídeo</label>
+<select id="style"><option>curioso e direto</option><option>didático e simples</option><option>alerta importante, sem sensacionalismo</option><option>leve e divertido</option></select>
+<button class="primary" id="generate" type="button">Gerar roteiro com Gemini</button>
+<p class="note" id="aiStatus" aria-live="polite">A IA só funciona depois de configurar a chave secreta no servidor Cloudflare Pages.</p>
+<div id="aiOutput" class="result hidden"><small>ROTEIRO GERADO — REVISE ANTES DE PUBLICAR</small><div id="aiText" style="white-space:pre-wrap;line-height:1.6;margin-top:12px"></div><button class="primary" id="copyScript" type="button">Copiar roteiro</button></div>
+</div>
+</section>
 <section id="tutor" class="tab hidden"><div class="panel placeholder"><strong>Professor de programação</strong>O professor de Python e outras linguagens será conectado nesta área.</div></section>
 </main>
 <footer>YouTube AI Studio · Painel inicial</footer>
 <script>
-const ids=["videos","interval","unit","hours","days"];
 const el=id=>document.getElementById(id);
 const fmt=n=>Math.floor(n).toLocaleString("pt-BR");
 function calculate(){
- const videos=Math.max(0,Number(el("videos").value)||0);
- const interval=Math.max(0,Number(el("interval").value)||0)*Number(el("unit").value);
- const hours=Math.min(24,Math.max(0,Number(el("hours").value)||0));
- const days=Math.max(0,Number(el("days").value)||0);
- if(!interval){el("total").textContent="—";el("daily").textContent="—";el("posts").textContent="—";return}
- const posts=Math.floor(hours*60/interval);
- const daily=posts*videos;
- el("total").textContent=fmt(daily*days)+" vídeos";
- el("daily").textContent=fmt(daily);
- el("posts").textContent=fmt(posts);
+ const videos=Math.max(1,Number(el("videos").value)||1);
+ const interval=Math.max(1,Number(el("interval").value)||1);
+ const totalMinutes=videos*interval;
+ const days=totalMinutes/1440;
+ const h=Math.floor(totalMinutes/60), m=totalMinutes%60;
+ el("total").textContent=(h?h+" hora"+(h===1?"":"s"):"")+(h&&m?" e ":"")+(m?m+" minuto"+(m===1?"":"s"):"");
+ if(!h&&!m)el("total").textContent="0 minutos";
+ el("daily").textContent=fmt(videos)+" vídeos";
+ el("daysResult").textContent=days.toLocaleString("pt-BR",{maximumFractionDigits:2})+" dia(s)";
 }
-ids.forEach(id=>el(id).addEventListener("input",calculate));
-el("reset").addEventListener("click",()=>{el("videos").value=1;el("interval").value=10;el("unit").value=1;el("hours").value=24;el("days").value=7;calculate()});
+el("videos").addEventListener("input",calculate);
+el("interval").addEventListener("input",calculate);
 document.querySelectorAll("nav button").forEach(btn=>btn.addEventListener("click",()=>{
  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b===btn));
  document.querySelectorAll(".tab").forEach(tab=>tab.classList.toggle("hidden",tab.id!==btn.dataset.tab));
 }));
+el("generate").addEventListener("click",async()=>{
+ const button=el("generate"), status=el("aiStatus");
+ button.disabled=true;button.textContent="Gerando...";status.textContent="A IA está preparando seu roteiro.";
+ el("aiOutput").classList.add("hidden");
+ try{
+  const response=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({topic:el("topic").value,style:el("style").value})});
+  const data=await response.json();
+  if(!response.ok)throw new Error(data.error||"Não foi possível gerar o roteiro.");
+  el("aiText").textContent=data.text;
+  el("aiOutput").classList.remove("hidden");
+  status.textContent="Roteiro criado com "+data.model+". Confira as informações e fontes antes de publicar.";
+ }catch(error){status.textContent=error.message+" Se a página estiver no GitHub Pages, a função de servidor não será executada; publique pelo Cloudflare Pages.";}
+ finally{button.disabled=false;button.textContent="Gerar roteiro com Gemini";}
+});
+el("copyScript").addEventListener("click",async()=>{try{await navigator.clipboard.writeText(el("aiText").textContent);el("copyScript").textContent="Copiado!";}catch{el("copyScript").textContent="Não foi possível copiar";}});
 calculate();
 </script>
 </body>
